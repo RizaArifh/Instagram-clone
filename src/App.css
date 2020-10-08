@@ -3,6 +3,7 @@
 }
 .app__headerImage{
   width: 3rem;
+  object-fit: contain;
 }
 
 .app__header{
@@ -10,6 +11,8 @@
   padding:20px;
   object-fit: contain;
   border-bottom: 1px solid lightblue;
+  display: flex;
+  justify-content: space-between;
 }
 
 .App{

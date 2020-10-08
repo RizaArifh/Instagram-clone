@@ -39,15 +39,14 @@ function App() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [user, setUser] = useState("");
-  const [openSignIn, setOpenSignIn] = useState(false)
+  const [openSignIn, setOpenSignIn] = useState(false);
 
-  //auth login for checking 
+  //auth login for checking
   useEffect(() => {
     const unsubscibe = auth.onAuthStateChanged((authUser) => {
       if (authUser) {
         console.log(authUser);
         setUser(authUser);
-
       } else {
         setUser(null);
       }
@@ -59,7 +58,7 @@ function App() {
 
   //get data from firebase table post and take id and post data
   useEffect(() => {
-    db.collection("posts").onSnapshot((snapshot) => {
+    db.collection("posts").orderBy('timestamp','desc').onSnapshot((snapshot) => {
       setPosts(
         snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -74,34 +73,31 @@ function App() {
     event.preventDefault();
     auth
       .createUserWithEmailAndPassword(email, password)
-      .then((authUser)=>{
+      .then((authUser) => {
         authUser.user.updateProfile({
-          displayName:username
-        })
+          displayName: username,
+        });
       })
       .catch((error) => alert(error.message));
-      setOpen(false)
+    setOpen(false);
   };
 
-
   //sigin proccess
-  const signIn = (event)=>{
+  const signIn = (event) => {
     event.preventDefault();
-   auth.signInWithEmailAndPassword(email,password) 
-   .catch((error)=>{
-     alert(error.message)
-   })
-   setOpenSignIn(false)
-  }
+    auth.signInWithEmailAndPassword(email, password).catch((error) => {
+      alert(error.message);
+    });
+    setOpenSignIn(false);
+  };
 
   return (
     <div className="App">
+     
 
-<ImageUpload />
-
-{/* modal signup */}
+      {/* modal signup */}
       <Modal open={open} onClose={() => setOpen(false)}>
-        <div style={modalStyle} className={classes.paper}> 
+        <div style={modalStyle} className={classes.paper}>
           <form className="app__signup" onSubmit={handleSignUp}>
             <center>
               <img className="app__headerImage" src={Logo} alt="gambar-logo" />
@@ -129,7 +125,7 @@ function App() {
           </form>
         </div>
       </Modal>
-{/* modal signin */}
+      {/* modal signin */}
       <Modal open={openSignIn} onClose={() => setOpenSignIn(false)}>
         <div style={modalStyle} className={classes.paper}>
           <form className="app__signup" onSubmit={handleSignUp}>
@@ -148,25 +144,29 @@ function App() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <Button type="submit" onClick={signIn} >Sign In</Button>
+            <Button type="submit" onClick={signIn}>
+              Sign In
+            </Button>
           </form>
         </div>
       </Modal>
 
-{/* header post */}
+      {/* header post */}
       <div className="app__header">
         <img className="app__headerImage" src={Logo} alt="gambar-logo" />
-      </div>
-      {/* checking login true or false and append button */}
-      {user?(
+        {user ? (
         <Button onClick={() => auth.signOut()}>Sign Out</Button>
-      ):(
-        <div className='app__loginContainer'> 
-      <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
-      <Button onClick={() => setOpen(true)}>Sign Up</Button>
+      ) : (
+        <div className="app__loginContainer">
+          <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
+          <Button onClick={() => setOpen(true)}>Sign Up</Button>
         </div>
       )}
-{/* list of post */}
+
+      </div>
+      {/* checking login true or false and append button */}
+      
+      {/* list of post */}
       {posts.map(({ id, post }) => (
         <Post
           key={id}
@@ -175,6 +175,12 @@ function App() {
           imageUrl={post.imageUrl}
         />
       ))}
+       {user?.displayName ? (
+      <ImageUpload username={user.displayName} />
+
+      ):(
+        <h3>sorry you need login to upload</h3>
+      )}
     </div>
   );
 }
