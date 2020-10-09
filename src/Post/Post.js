@@ -2,8 +2,9 @@ import { Avatar, Button, Input } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import "./Post.css";
 import { db } from "../firebase";
+import firebase from "firebase";
 
-function Post({ postId, username, caption, imageUrl }) {
+function Post({ postId, user, username, caption, imageUrl }) {
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState("");
 
@@ -14,7 +15,7 @@ function Post({ postId, username, caption, imageUrl }) {
       unsubscribe = db
         .collection("posts")
         .doc(postId)
-        .collection("comments")
+        .collection("comments").orderBy("timestamp","desc")
         .onSnapshot((snapshot) => {
           setComments(snapshot.docs.map((doc) => doc.data()));
         });
@@ -24,11 +25,18 @@ function Post({ postId, username, caption, imageUrl }) {
     };
   }, [postId]);
 
+  //postcomment
+  const postComment = (event) => {
+    event.preventDefault();
 
-    //postcomment
-    const postComment=(event)=>{
-      
-    }
+    db.collection("posts").doc(postId).collection("comments").add({
+        text: comment,
+        username: user.displayName,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    setComment("");
+  };
+  
   return (
     <div className="post">
       {/* {header->avatar+username} */}
@@ -48,15 +56,26 @@ function Post({ postId, username, caption, imageUrl }) {
         <strong className="post_username_bottom">{username}</strong>
         {caption}
       </h4>
-
+      {/* //show comment */}
+      <div className="post__comments">
+        {
+          comments.map((comment) => (
+            <div className='post__comment_per'>
+              <b>{comment.username}</b> {comment.text}
+            </div>
+          ))
+        }
+      </div>
       {/* {comment} */}
-      <form>
+      <form className="post__commentBox">
         <Input
           className="post__input"
           type="text"
           placeholder="add a comment"
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          onChange={(e) => setComment(e.target.value)
+            // console.log(comment)
+          }
         />
         <Button
           disabled={!comment}
